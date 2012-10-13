@@ -9,4 +9,3 @@ ex1open.o: ex1open.c
 clean:
 		rm -f *.o
 
-.PHONY: clean
