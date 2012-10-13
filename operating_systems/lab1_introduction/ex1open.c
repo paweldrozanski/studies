@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdlib.h>
  
 #define BUFSIZE 1024
  
@@ -18,6 +19,7 @@ int main (int argc, char **argv) {
     open_return = f1;
     if (open_return == -1){
       perror("Blad otwarcia");
+      exit(EXIT_FAILURE);
     }
     else {
       printf("Open zakonczyl sie bez bledow\n");
@@ -25,6 +27,7 @@ int main (int argc, char **argv) {
     read_return = read (f1, b, c);
     if (read_return == -1){
       perror("Blad odczytu");
+      exit(EXIT_FAILURE);
     }
     else {
       printf("Read zakonczyl sie bez bledow\n");
