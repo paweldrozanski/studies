@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
+#include "t.h"
  
 #define BUFSIZE 1024
  
@@ -15,8 +16,9 @@ int main (int argc, char **argv) {
     n1 = argv[1];
  
     f1 = open (n1, O_RDONLY);
-    
+    timestart();
     open_return = f1;
+    timestop("Stop:");
     if (open_return == -1){
       perror("Blad otwarcia");
       exit(EXIT_FAILURE);
