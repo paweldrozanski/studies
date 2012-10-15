@@ -24,7 +24,7 @@
 void copy(char *from, char *to)  /* has a bug */
 {
 	int fromfd = -1, tofd = -1, errsv;
-	ssize_t nread;
+	ssize_t nread, nwrite;
 	char buf[BUFSIZE];
 	
 	fromfd = open(from, O_RDONLY);
@@ -45,7 +45,10 @@ void copy(char *from, char *to)  /* has a bug */
     tofd = open(to, O_WRONLY | O_CREAT | O_TRUNC,
         S_IRUSR | S_IWUSR);
     while ((nread = read(fromfd, buf, sizeof(buf))) > 0)
-      write(tofd, buf, nread);	
+      nwrite = write(tofd, buf, nread);	
+
+      printf("Read value: %zd.\n", nread);
+      printf("Write value: %zd.\n", nwrite);
 
     close(fromfd);
     close(tofd);
