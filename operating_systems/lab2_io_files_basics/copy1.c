@@ -14,24 +14,43 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <string.h>
 
 #define BUFSIZE 512
 
 void copy(char *from, char *to)  /* has a bug */
 {
-	int fromfd = -1, tofd = -1;
+	int fromfd = -1, tofd = -1, errsv;
 	ssize_t nread;
 	char buf[BUFSIZE];
 	
 	fromfd = open(from, O_RDONLY);
-	tofd = open(to, O_WRONLY | O_CREAT | O_TRUNC,
-				S_IRUSR | S_IWUSR);
-	while ((nread = read(fromfd, buf, sizeof(buf))) > 0)
-	    write(tofd, buf, nread);	
-	
-        close(fromfd);
-	close(tofd);
-	return;
+
+  if (fromfd == -1){
+    errsv = errno;
+
+    printf( "Error opening file: %s\n", strerror( errsv) );
+    if (errsv == ENOENT) {
+      printf ("NO SUCH FILE!");
+    }
+    if (errsv == EACCES) {
+      printf ("NO RIGHTS TO OPEN THE FILE");
+    }
+  }
+  else {
+  
+    tofd = open(to, O_WRONLY | O_CREAT | O_TRUNC,
+        S_IRUSR | S_IWUSR);
+    while ((nread = read(fromfd, buf, sizeof(buf))) > 0)
+      write(tofd, buf, nread);	
+
+    close(fromfd);
+    close(tofd);
+    return;
+  }
 }
 
 int main(int argc, char **argv){
