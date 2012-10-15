@@ -11,10 +11,15 @@ for i in `cat sysconf.list.txt | grep _SC`
 do
     echo '#ifdef '$i
     echo "r = sysconf($i);"
-    echo "printf(\"The value of $i is %ldDDD\", r);"
+    echo 'if (r == -1){'
+    echo 'perror("Error with '$i'");'
+    echo '}'
+    echo 'else {'
+    echo 'printf("The value of '$i' is %ld\\n", r);'
+    echo '}'
     echo "#else"
-    echo "printf(\"The $i is undefined.DDD\");"
-    echo '#endif'
+    echo 'printf("The '$i' is undefined.\\n");'
+    echo "#endif"
 done
 
 echo "return 0;"
