@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 /*[readall]*/
 ssize_t readall(int fd, const void *buf, size_t nbyte)
 {
@@ -11,6 +17,6 @@ ssize_t readall(int fd, const void *buf, size_t nbyte)
         return -1;
     }
     nread += n;
-  } while (nread < nbyt);
+  } while (nread < nbyte);
   return nread;
 }
