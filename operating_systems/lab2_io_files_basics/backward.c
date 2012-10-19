@@ -1,3 +1,11 @@
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <string.h>
 /*[backward]*/
 void backward(char *path)
 {
@@ -11,6 +19,7 @@ void backward(char *path)
 	s[i] = '\0';
 	do {
 		where = lseek(fd, -2, SEEK_CUR);
+    printf("SEEK_CUR: %zu\n", where);
 		switch (read(fd, &c, 1)) {
 			case 1:
 				if (c == '\n') {
@@ -22,6 +31,8 @@ void backward(char *path)
 					/* handle the error */
 				}
 				s[--i] = c;
+        printf("c = %c, i = %d\n", c,i);
+        printf("%s", &s[i]);
 				break;
 			case -1:
 				/* handle the error */
@@ -34,4 +45,14 @@ void backward(char *path)
 	printf("%s", &s[i]);
 	close(fd);
 	return;
+}
+
+int main(int argc, char** argv){
+  if (argc == 2){
+    backward(argv[1]);
+  }
+  else {
+    printf("Wrong number of args...\n");
+  }
+  return 0;
 }
