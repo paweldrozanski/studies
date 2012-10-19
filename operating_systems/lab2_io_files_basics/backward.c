@@ -11,16 +11,14 @@ void backward(char *path)
 {
 	char s[256], c;
 	int i, fd;
-	off_t where;
+	off_t where, file_size;
 	
 	fd = open(path, O_RDONLY);
-	where = lseek(fd, 1, SEEK_END);
+	file_size = lseek(fd, 0, SEEK_END);
 	i = sizeof(s) - 1;
 	s[i] = '\0';
-	do {
-		where = lseek(fd, -2, SEEK_CUR);
-    printf("SEEK_CUR: %zu\n", where);
-		switch (read(fd, &c, 1)) {
+  for (where = file_size -1; where >= 0; where--)
+		switch (pread(fd, &c, 1,where)) {
 			case 1:
 				if (c == '\n') {
 					printf("%s", &s[i]);
@@ -31,8 +29,6 @@ void backward(char *path)
 					/* handle the error */
 				}
 				s[--i] = c;
-        printf("c = %c, i = %d\n", c,i);
-        printf("%s", &s[i]);
 				break;
 			case -1:
 				/* handle the error */
@@ -41,7 +37,6 @@ void backward(char *path)
 				errno = 0;
 				/* handle the error */
 		}
-	} while (where > 0);
 	printf("%s", &s[i]);
 	close(fd);
 	return;
