@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <libgen.h>
+#include <pwd.h>
+#include <grp.h>
 /* -------------------------------------------------------------------------------- */
 
 static void print_type(struct stat *sb);
@@ -52,6 +54,11 @@ static void print_type(struct stat *sb){
   switch (sb->st_mode & S_IFMT) {
   case S_IFBLK:  printf("block device\n");            break;
   case S_IFCHR:  printf("character device\n");        break;
+  case S_IFDIR:  printf("directory\n");               break;
+  case S_IFIFO:  printf("FIFO/pipe\n");               break;
+  case S_IFLNK:  printf("symlink\n");                 break;
+  case S_IFREG:  printf("regular file\n");            break;
+  case S_IFSOCK: printf("socket\n");                  break;
   default:       printf("unknown?\n");                break;
   }
 }
@@ -63,7 +70,9 @@ static void print_ino(const struct stat *sb){
 /* -------------------------------------------------------------------------------- */
 
 static void print_perms(const struct stat *sb){
-  printf("Mode:                     %lo (octal)\n", (unsigned long) sb->st_mode);
+  printf("Mode:                     %lo \n", (unsigned long) sb->st_mode & 0700);
+  printf("Your permissions: ");
+
 }
 /* -------------------------------------------------------------------------------- */
 
@@ -73,7 +82,8 @@ static void print_linkc(const struct stat *sb){
 /* -------------------------------------------------------------------------------- */
 
 static void print_owner(const struct stat *sb){
-  printf("Ownership:                UID=%ld   GID=%ld\n", (long) sb->st_uid, (long) sb->st_gid);
+  printf("Ownership:                %s(%ld) %s(%ld)\n", getpwuid(sb->st_uid)->pw_name, (long) sb->st_uid,
+                                                        getgrgid(sb->st_gid)->gr_name, (long) sb->st_gid);
 }
 /* -------------------------------------------------------------------------------- */
 
