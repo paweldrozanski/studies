@@ -6,11 +6,12 @@
 #include <libgen.h>
 #include <pwd.h>
 #include <grp.h>
+#include <unistd.h>
 /* -------------------------------------------------------------------------------- */
 
 static void print_type(struct stat *sb);
 static void print_ino(const struct stat *sb);
-static void print_perms(const struct stat *sb);
+static void print_perms(const struct stat *sb, const char* path);
 static void print_linkc(const struct stat *sb);
 static void print_owner(const struct stat *sb);
 static void print_size(const struct stat *sb);
@@ -37,7 +38,7 @@ int  main(int argc, char *argv[])
   print_type(&sb);
   print_name(&sb, argv[1]);
   print_ino(&sb);
-  print_perms(&sb);
+  print_perms(&sb, argv[1]);
   print_linkc(&sb);
   print_owner(&sb);
   print_size(&sb);
@@ -69,9 +70,17 @@ static void print_ino(const struct stat *sb){
 }
 /* -------------------------------------------------------------------------------- */
 
-static void print_perms(const struct stat *sb){
+static void print_perms(const struct stat *sb, const char *path){
+  char* read = malloc(3*sizeof(char));
+  char* write= malloc(3*sizeof(char));
+  char* execute= malloc(3*sizeof(char));
+
   printf("Mode:                     %lo \n", (unsigned long) sb->st_mode & 0700);
-  printf("Your permissions: ");
+
+  read = access(path, R_OK) == 0 ? "yes" : "no";
+  write = access(path, W_OK) == 0 ? "yes" : "no";
+  execute = access(path, X_OK) == 0 ? "yes" : "no";
+  printf("Your permissions: read: %s, write: %s, execute: %s\n", read, write, execute);
 
 }
 /* -------------------------------------------------------------------------------- */
@@ -86,10 +95,27 @@ static void print_owner(const struct stat *sb){
                                                         getgrgid(sb->st_gid)->gr_name, (long) sb->st_gid);
 }
 /* -------------------------------------------------------------------------------- */
+void check_and_print_size(long point){
+
+  if (point <1024) printf("%ld B\n",point); 
+  else if (point < 1024*1024) printf("%ld KB\n", point/(1024));
+  else if (point < 1024*1024*1024) printf("%ld MB\n", point/(1024*1024));
+  else printf("way more than %ld BrontoBytes\n", point/(1024*1024*1024));
+}
 
 static void print_size(const struct stat *sb){
-  printf("Preferred I/O block size: %ld bytes\n", (long) sb->st_blksize);
-  printf("File size:                %lld bytes\n",(long long) sb->st_size);
+  
+
+  printf("Preferred I/O block size:\t"); 
+  /*
+  if ((long)sb->st_blksize <1024) printf("%ld B\n", (long) sb->st_blksize);
+  else if ((long)sb->st_blksize < 1024*1024) printf("%ld KB\n", (long) sb->st_blksize/(1024));
+  else if ((long)sb->st_blksize < 1024*1024*1024) printf("%ld MB\n", (long) sb->st_blksize/(1024));
+  else printf("%ld BrontoBytes\n", (long)sb->st_blksize/(1024*1024*1024));
+  */
+  check_and_print_size((long)sb->st_blksize);
+  /*printf("File size:                %lld bytes\n",(long long) sb->st_size);*/
+  printf("File size:\t"); check_and_print_size((long long) sb->st_size);
   printf("Blocks allocated:         %lld\n",(long long) sb->st_blocks);
 }
 /* -------------------------------------------------------------------------------- */
