@@ -1,13 +1,13 @@
 
 CC=gcc
-CFLAGS=-Wall -ansi -pedantic
+CFLAGS=-Wall -ansi -pedantic -lrt
 
 all: stat_info
 
 stat_info: stat_info.o
-		gcc stat_info.o -o stat_info
+		gcc -lrt stat_info.o -o stat_info
 stat_info.o: stat_info.c
-		gcc -c stat_info.c -o stat_info.o
+		gcc -c -lrt stat_info.c -o stat_info.o
 
 clean:
 		rm -f *o stat_info

@@ -7,6 +7,10 @@
 #include <pwd.h>
 #include <grp.h>
 #include <unistd.h>
+#include <aio.h>
+#include <errno.h>
+
+#define FREQ   400 
 /* -------------------------------------------------------------------------------- */
 
 static void print_type(struct stat *sb);
@@ -182,14 +186,43 @@ static void print_name(const struct stat *sb, char *name){
 }
 /* -------------------------------------------------------------------------------- */
 static void print_content(char *name){
-  
-  int fd;
-  char ans;
-  printf("Print the argument content? ");
-  ans = getc(stdin);
 
-  if (ans == "y") {
-    fd = open(argv[1], O_RDONLY);
+  const int SIZE_TO_READ = 10;
+  int fd;
+  char* buffer = malloc(SIZE_TO_READ* ( sizeof(char)));
+
+  if ((fd = open(name, O_RDONLY)) == -1){
+    perror("can't open the file...");
   }
 
+  struct aiocb cb;
+  
+  memset(&cb, 0, sizeof(struct aiocb));
+  cb.aio_nbytes = SIZE_TO_READ;
+  cb.aio_fildes = fd;
+  cb.aio_offset = 0;
+  cb.aio_buf = buffer;
+  
+  // read!
+  if (aio_read(&cb) == -1)
+  {
+    printf("Unable to create requests!\n");
+    close(fd);
+    return;
+  }
+  printf("Request enqueued!\n");
+  while(aio_error(&cb) == EINPROGRESS)
+  {
+    printf("Working...\n");
+  }
+  // success?
+  int numBytes = aio_return(&cb);
+
+  if (numBytes != -1)
+    printf("Success!\n");
+  else
+    printf("Error!\n");
+
+  free(buffer);
+  close(fd);
 }
