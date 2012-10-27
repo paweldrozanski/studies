@@ -84,9 +84,9 @@ int readcmd(char* __buf, int __bufsize)
     while(1){
       char c = getchar();
       if(c == '\n')
-	break;
+        break;
       else if((c == EOF) && (ferror(stdin)))
-	return RESERROR;
+        return RESERROR;
     }
     printf("Line is too long -- the command will be ignored.\nMaximal size is %d.", __bufsize-2);
     return RESERROR;
@@ -134,6 +134,11 @@ int executecmds(struct cmdlist* __head)
     e = errno;
 
     if(f == 0){
+    if (strcmp(curr->argv[0], "exit") == 0){
+      printf("Exiting the shell!");
+      dealocate(__head);
+      exit(0);
+    }
       execvp(curr->argv[0], curr->argv);
       e = errno;
       printf("Error while executing: %s", strerror(e));
