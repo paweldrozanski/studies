@@ -50,6 +50,6 @@ void timestop(char *msg)
 		(long)(real2 - real1),
 	  	(long)(tbuf2.tms_cutime - tbuf1.tms_cutime),
 	  	(long)(tbuf2.tms_cstime - tbuf1.tms_cstime));
-	return;
+	return ;
 }
 /*[]*/
