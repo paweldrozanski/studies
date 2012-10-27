@@ -130,15 +130,15 @@ int executecmds(struct cmdlist* __head)
   struct cmdlist* curr = __head;
 
   while(curr != NULL){
+    if ((curr->argv[0] != NULL)&& (strcmp(curr->argv[0], "exit") == 0) ){
+      printf("Exiting the shell!");
+      exit(0);
+    }
+
     f = fork();
     e = errno;
 
     if(f == 0){
-    if (strcmp(curr->argv[0], "exit") == 0){
-      printf("Exiting the shell!");
-      dealocate(__head);
-      exit(0);
-    }
       execvp(curr->argv[0], curr->argv);
       e = errno;
       printf("Error while executing: %s", strerror(e));
