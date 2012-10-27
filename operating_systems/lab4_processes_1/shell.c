@@ -126,7 +126,7 @@ int parsecmd(char* __buf, int __bufsize, struct cmdlist* __head)
 /* 4. Executing parsed commands */
 int executecmds(struct cmdlist* __head)
 {
-  int f, e, w, status;
+  int f, e, w, status, procres;
   struct cmdlist* curr = __head;
 
   while(curr != NULL){
@@ -142,16 +142,31 @@ int executecmds(struct cmdlist* __head)
       execvp(curr->argv[0], curr->argv);
       e = errno;
       printf("Error while executing: %s", strerror(e));
+    } else {                    /* Code executed by parent */
+      do {
+        w = waitpid(f, &status, WUNTRACED | WCONTINUED);
+        if (w == -1) {
+          perror("waitpid");
+          exit(EXIT_FAILURE);
+        }
+
+        if (WIFEXITED(status)) {
+          printf("exited, status=%d\n", WEXITSTATUS(status));
+        } else if (WIFSIGNALED(status)) {
+          procres = 0;
+          printf("killed by signal %d\n", WTERMSIG(status));
+        } else if (WIFSTOPPED(status)) {
+          procres = 0;
+          printf("stopped by signal %d\n", WSTOPSIG(status));
+        } else if (WIFCONTINUED(status)) {
+          procres = 1;
+          printf("continued\n");
+        }
+        procres = WEXITSTATUS(status);
+        printf("Value of procres: %d;\n", procres);
+      } while (!WIFEXITED(status) && !WIFSIGNALED(status));
     }
 
-    else {
-      w = waitpid(f, &status, WUNTRACED | WCONTINUED);
-      if (w == -1) {
-        perror("waitpid");
-        exit(EXIT_FAILURE);
-      }
-
-    }
     if(f == -1){
       printf("Fork error: %s", strerror(e));
       return RESERROR;
