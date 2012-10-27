@@ -126,7 +126,7 @@ int parsecmd(char* __buf, int __bufsize, struct cmdlist* __head)
 /* 4. Executing parsed commands */
 int executecmds(struct cmdlist* __head)
 {
-  int f, e;
+  int f, e, w, status;
   struct cmdlist* curr = __head;
 
   while(curr != NULL){
@@ -142,6 +142,15 @@ int executecmds(struct cmdlist* __head)
       execvp(curr->argv[0], curr->argv);
       e = errno;
       printf("Error while executing: %s", strerror(e));
+    }
+
+    else {
+      w = waitpid(f, &status, WUNTRACED | WCONTINUED);
+      if (w == -1) {
+        perror("waitpid");
+        exit(EXIT_FAILURE);
+      }
+
     }
     if(f == -1){
       printf("Fork error: %s", strerror(e));
