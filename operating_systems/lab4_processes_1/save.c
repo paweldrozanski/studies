@@ -15,15 +15,15 @@ int main(int argc, char* argv[])
 {
   struct rlimit limit;
   char buf[BUFSIZE] = {'a','a','a','a','a'};
-  char* filename;
-  int bytes = 0, towrite, smin = 0, smax = 10000, sdef = 100, 
-    wrote, fd, s = sdef; 
+  char *filename, *endptr;
+  int bytes = 0, towrite, smin = 0, smax = 10000, sdef = 100,wrote, fd, s;
 
-  if (argc == 2){
-    filename = argv[1];
+  if (argc == 3){
+    s = strtol(argv[1], &endptr, 10);
+    filename = argv[2];
   }
   else {
-    printf("Please give filename as a first arg...\n");
+    printf("Proper execution: ./save [bytes] file\n");
     return -1;
   }
   if((s < smin) || (s > smax))
