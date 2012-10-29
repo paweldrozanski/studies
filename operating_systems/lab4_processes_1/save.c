@@ -22,9 +22,14 @@ int main(int argc, char* argv[])
     s = strtol(argv[1], &endptr, 10);
     filename = argv[2];
   }
+  else if (argc == 2){
+    s = 100;
+    filename = argv[1];
+
+  }
   else {
     printf("Proper execution: ./save [bytes] file\n");
-    return -1;
+    return 1;
   }
   if((s < smin) || (s > smax))
      s = sdef;     
