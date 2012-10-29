@@ -25,7 +25,7 @@ int main(void)
     printprompt();
     if(readcmd(cmd, MAXCMD) == RESERROR) continue;
     res = parsecmd(cmd, MAXCMD, &cmds);
-    /* printparsedcmds(&cmds); */
+    /*printparsedcmds(&cmds);*/
     executecmds(&cmds);
     dealocate(&cmds);
   }
@@ -104,6 +104,29 @@ int parsecmd(char* __buf, int __bufsize, struct cmdlist* __head)
 
   /* Reading next word - read strtok(3)  */
   while((word = strtok(cmd, " \t\n")) != NULL){ 
+
+    if((strcmp(word, "&&") == 0) || (strcmp(word,"||") == 0)){
+      struct cmdlist* newcom = malloc(sizeof(struct cmdlist));
+      curr->next = newcom;
+      /* Setting up parsed command -- the NULL pointer at the end of the parameters list must added  */
+      if(setupparsedcommand(curr) == RESERROR){                               
+        printf("Error while setting up parsed command.");
+        return RESERROR;
+      }
+      curr = curr->next;
+      setupnewcommand(curr);
+
+      if (strcmp("&&", word) == 0){
+        curr->conjuction = CONJAND;
+      }
+      else{
+        curr->conjuction = CONJOR;
+      }
+      continue;
+    }
+
+
+
     curr->argc++;
     curr->argv = (char**)realloc(curr->argv, sizeof(char*)*curr->argc);   /* memory reallocation - needed for new argument  */
     if(curr->argv == NULL){
@@ -119,6 +142,10 @@ int parsecmd(char* __buf, int __bufsize, struct cmdlist* __head)
     printf("Error while setting up parsed command.");
     return RESERROR;
   }
+
+  struct cmdlist* allCommands;
+
+
   return RESSUCCESS;
 }
 /* -------------------------------------------------------------------------------------- */
@@ -126,10 +153,19 @@ int parsecmd(char* __buf, int __bufsize, struct cmdlist* __head)
 /* 4. Executing parsed commands */
 int executecmds(struct cmdlist* __head)
 {
-  int f, e, w, status, procres;
+  int f, e, w, status, procres=0;
   struct cmdlist* curr = __head;
 
   while(curr != NULL){
+
+    if((curr->conjuction==CONJOR) && (procres==1)){
+        curr = curr->next;
+        continue;
+    }
+    if((curr->conjuction==CONJAND) && (procres==0)){
+        curr = curr->next;
+        continue;
+    }
     if ((curr->argv[0] != NULL)&& (strcmp(curr->argv[0], "exit") == 0) ){
       printf("Exiting the shell!");
       exit(0);
@@ -142,7 +178,8 @@ int executecmds(struct cmdlist* __head)
       execvp(curr->argv[0], curr->argv);
       e = errno;
       printf("Error while executing: %s", strerror(e));
-    } else {                    /* Code executed by parent */
+    } 
+    else {                    /* Code executed by parent */
       do {
         w = waitpid(f, &status, WUNTRACED | WCONTINUED);
         if (w == -1) {
@@ -151,18 +188,19 @@ int executecmds(struct cmdlist* __head)
         }
 
         if (WIFEXITED(status)) {
+          printf("WEXITSTATUS(status): %d;\n", WEXITSTATUS(status));
+
+          if (WEXITSTATUS(status)==0) procres=1;
+          else procres=0;
           printf("exited, status=%d\n", WEXITSTATUS(status));
+
         } else if (WIFSIGNALED(status)) {
-          procres = 0;
           printf("killed by signal %d\n", WTERMSIG(status));
         } else if (WIFSTOPPED(status)) {
-          procres = 0;
           printf("stopped by signal %d\n", WSTOPSIG(status));
         } else if (WIFCONTINUED(status)) {
-          procres = 1;
           printf("continued\n");
         }
-        procres = WEXITSTATUS(status);
         printf("Value of procres: %d;\n", procres);
       } while (!WIFEXITED(status) && !WIFSIGNALED(status));
     }
