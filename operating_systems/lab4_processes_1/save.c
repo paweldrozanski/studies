@@ -19,7 +19,13 @@ int main(int argc, char* argv[])
   int bytes = 0, towrite, smin = 0, smax = 10000, sdef = 100, 
     wrote, fd, s = sdef; 
 
-  filename = "tmp.txt";
+  if (argc == 2){
+    filename = argv[1];
+  }
+  else {
+    printf("Please give filename as a first arg...\n");
+    return -1;
+  }
   if((s < smin) || (s > smax))
      s = sdef;     
   
