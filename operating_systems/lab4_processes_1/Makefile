@@ -1,17 +1,22 @@
 CC=gcc
 CFLAGS=-Wall -ansi -pedantic
 
-all: shell
+all: shell save
 
 shell: func.o shell.o
-		gcc $(CFLAGS) func.o shell.o -o shell
+		$(CC) $(CFLAGS) func.o shell.o -o shell
 shell.o: shell.c
-		gcc -c $(CFLAGS) shell.c -o shell.o
+		$(CC) -c $(CFLAGS) shell.c -o shell.o
 func.o: func.c
-		gcc -c $(CFLAGS) func.c -o func.o
+		$(CC) -c $(CFLAGS) func.c -o func.o
+
+save: save.o
+		$(CC) $(CFLAGS) save.o -o $@
+save.o: save.c
+		$(CC) $(CFLAGS) -c save.c -o $@
 
 clean:
-		rm -f *o shell
+		rm -f *o shell save
 
 .PHONY: clean
 
