@@ -5,16 +5,27 @@
 void *PrintHello(void *arg){
    printf("Next boring 'Hello World!' version!\n");
 
-return NULL;
+   return NULL;
+}
+
+void *PrintOwnNumber(void *arg){
+  
+  int id = (int)arg;
+  printf("My number is %d!\n", id);
+  return NULL;
 }
 
 int main(int argc, char *argv[]){
-   pthread_t thread;
-   int rc = pthread_create(&thread, NULL, PrintHello, NULL);
-     if (rc){
-       printf("Return code: %d\n", rc);
-       exit(-1);
-       }
-sleep(1);
+  int pthread_array[10], i; 
+  pthread_t thread[10];
+  for (i=0; i<10; i++){
+    pthread_array[i] = pthread_create(&thread[i], NULL, PrintOwnNumber,(void *) i);
+    if (pthread_array[i]){
+      printf("Return code: %d\n", pthread_array[i]);
+      exit(-1);
+    }
+    sleep(1);
+  }
+
 return 0;
 }
