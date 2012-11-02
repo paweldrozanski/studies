@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/resource.h>
 
 #include <stdio.h>
@@ -17,6 +18,12 @@ int main(int argc, char* argv[])
   char buf[BUFSIZE] = {'a','a','a','a','a'};
   char *filename, *endptr;
   int bytes = 0, towrite, smin = 0, smax = 10000, sdef = 100,wrote, fd, s;
+
+  limit.rlim_cur = 50;
+  if (setrlimit(RLIMIT_FSIZE, &limit) != 0) {
+    printf("setrlimit() failed with errno=%d\n", errno);
+    exit(1);
+  }
 
   if (argc == 3){
     s = strtol(argv[1], &endptr, 10);

@@ -119,7 +119,7 @@ int parsecmd(char* __buf, int __bufsize, struct cmdlist* __head)
       if (strcmp("&&", word) == 0){
         curr->conjuction = CONJAND;
       }
-      else{
+      else if (strcmp("||", word) == 0){
         curr->conjuction = CONJOR;
       }
       continue;
@@ -158,14 +158,16 @@ int executecmds(struct cmdlist* __head)
 
   while(curr != NULL){
 
-    if((curr->conjuction==CONJOR) && (procres==1)){
+    
+    if((curr->conjuction==CONJOR) && (procres==0)){
         curr = curr->next;
         continue;
     }
-    if((curr->conjuction==CONJAND) && (procres==0)){
+    if((curr->conjuction==CONJAND) && (procres==1)){
         curr = curr->next;
         continue;
     }
+    
     if ((curr->argv[0] != NULL)&& (strcmp(curr->argv[0], "exit") == 0) ){
       printf("Exiting the shell!");
       exit(0);
@@ -188,11 +190,14 @@ int executecmds(struct cmdlist* __head)
         }
 
         if (WIFEXITED(status)) {
-          printf("WEXITSTATUS(status): %d;\n", WEXITSTATUS(status));
-
-          if (WEXITSTATUS(status)==0) procres=1;
-          else procres=0;
           printf("exited, status=%d\n", WEXITSTATUS(status));
+
+          if (WEXITSTATUS(status)==0){
+            procres=0;
+          }
+          else{
+            procres=1;
+          }
 
         } else if (WIFSIGNALED(status)) {
           printf("killed by signal %d\n", WTERMSIG(status));
