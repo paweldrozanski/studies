@@ -4,93 +4,92 @@
 
 #define NUM 4
 #define LENGTH 100
+// ----------------------------------------------------------
 
+typedef struct {
+     long* a;
+     long sum; 
+     int veclen; 
+} CommonData;
+// ----------------------------------------------------------
 
-typedef struct 
- {
-   double      *a;
-   double     sum; 
-   int     veclen; 
- } CommonData;
+CommonData data; 
+pthread_t threads[NUM];
+pthread_mutex_t mutex;
 
+void* calc(void* arg); // Funkcja rozpoczecia
+// ----------------------------------------------------------
 
-   CommonData data; 
-   pthread_t threads[NUM];
-   pthread_mutex_t mutex;
-
-void *calc(void *arg)
-{
-   long offset = (long)arg;
-   int len = data.veclen;
-   int start = offset*len;
-   int end   = start + len;
-
-   double *x = data.a;
-   double mysum = 0;
-   int i;
-   for (i=start; i<end ; i++) 
-    {
-      mysum += (x[i] * x[i]);
-    }
-   /*
-//lock critical part
-//*/
-   pthread_mutex_lock(&mutex);
-   /*
-//do Ur operations
-//*/
-   data.sum += mysum;
-   
-   /*
-//unlock
-//*/
-   pthread_mutex_unlock(&mutex);
-
-   pthread_exit((void*) 0);
-}
-
-/* MAIN ***************************************/
 int main (int argc, char *argv[]){
 
-long i;
-void *status;
-pthread_attr_t attr;
-double * a = (double*) malloc (NUM*LENGTH*sizeof(double));
-  
-//Prepare data structure
-for (i=0; i<LENGTH*NUM; i++) {
-  a[i]=i;
-  }
+     long i, sum = 0;
+     void* status;
+     long* a = (long*) malloc (NUM*LENGTH*sizeof(long));     
+     pthread_attr_t attr;
 
-data.veclen = LENGTH; 
-data.a = a; 
-data.sum=0;
+     int pthread_array[NUM];
+     
+     //Prepare data structure
+     for (i=0; i<LENGTH*NUM; i++) {
+          a[i] = i;
+          sum += i;
+     }
 
-//mutex initialization
-pthread_mutex_init(&mutex, NULL);
+     data.veclen = LENGTH; 
+     data.a = a; 
+     data.sum = 0;
+
+     //mutex initialization
+     pthread_mutex_init(&mutex, NULL);
          
-//[1] setting thread attribute
-pthread_attr_init(&attr);
-pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+     //[1] setting thread attribute
+     pthread_attr_init(&attr);
+     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-for(i=0;i<NUM;i++){
-   pthread_create(&threads[i], &attr, calc, (void *)i); 
+     for(i=0;i<NUM;i++){
+          // tworzenie watkow
+          pthread_array[i] = pthread_create(&threads[i], NULL, calc, (void *) i);
+          if (pthread_array[i]){
+            printf("Return code: %d\n", pthread_array[i]);
+            exit(-1);
+          }
+     }
+
+     //[1] destroy - not needed anymore
+     pthread_attr_destroy(&attr);
+
+     //join
+     for(i=0;i<NUM;i++) {
+          pthread_join(threads[i], &status);
+     }
+
+     //Print
+     printf ("Correct result is: %ld \n", sum);
+     printf ("Function result is: %ld \n", data.sum);
+
+     //Clean
+     free (a);
+     pthread_mutex_destroy(&mutex);
+     return 0;
 }
+// ----------------------------------------------------------
 
-//[1] destroy - not needed anymore
-pthread_attr_destroy(&attr);
+void* calc(void* arg)
+{
+  int segment = arg, start = segment*LENGTH, end = (segment+1)*LENGTH;
+  printf("start: %d, stop: %d.\n", start, end);
+  long* x = data.a;
+  long mysum = 0;
+  int i;
 
-//join
-for(i=0;i<NUM;i++) {
-  pthread_join(threads[i], &status);
+  for (i=start;i<end;i++){
+    mysum += x[i];
   }
 
-//Print
+  pthread_mutex_lock ( &mutex );
+  data.sum += mysum;
+  pthread_mutex_unlock ( &mutex );
 
-printf ("Function result is: %f \n", data.sum);
-
-//Clean
-free (a);
-pthread_mutex_destroy(&mutex);
-pthread_exit(NULL);
-}   
+  pthread_exit((void*) 0);
+}
+// ----------------------------------------------------------
