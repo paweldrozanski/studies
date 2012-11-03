@@ -32,11 +32,18 @@ void *calc(void *arg)
     {
       mysum += (x[i] * x[i]);
     }
+   /*
 //lock critical part
+//*/
    pthread_mutex_lock(&mutex);
+   /*
 //do Ur operations
+//*/
    data.sum += mysum;
+   
+   /*
 //unlock
+//*/
    pthread_mutex_unlock(&mutex);
 
    pthread_exit((void*) 0);
