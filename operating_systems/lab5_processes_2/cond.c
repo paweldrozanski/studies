@@ -4,7 +4,7 @@
 // ----------------------------------------------------------
 
 #define MAXVAL 100
-#define THREAD_NUM 10
+#define THREAD_NUM 5
 
 int globalvariable = 0, i;
 pthread_mutex_t mutex;
@@ -17,7 +17,7 @@ void* printinfo(void*);
 int main(){
   int i;
 
-  pthread_t t[THREAD_NUM];
+  pthread_t t[THREAD_NUM], thread_print;
   pthread_attr_t attr;
 
   // mutex initialization
@@ -32,6 +32,7 @@ int main(){
   for (i=0; i<THREAD_NUM; i++){
     pthread_create(&t[i], &attr, increment, (void*)i); 
   }
+  pthread_create(&thread_print, &attr, printinfo, (void*)999);
 
   for (i=0; i<THREAD_NUM; i++){
     pthread_join(t[i], NULL);
@@ -55,8 +56,8 @@ void* increment(void* arg) {
     }
 
     else{
-      printf("Thread: %d globalvariable: %d\n", (int)arg, globalvariable);
       globalvariable++;
+      printf("Thread: %d globalvariable: %d\n", (int)arg, globalvariable);
       pthread_mutex_unlock(&mutex);
       printf("\n");
     }

@@ -15,7 +15,9 @@ typedef struct {
 
 CommonData data; 
 pthread_t threads[NUM];
-pthread_mutex_t mutex;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+
 
 void* calc(void* arg); // Funkcja rozpoczecia
 // ----------------------------------------------------------
@@ -77,7 +79,7 @@ int main (int argc, char *argv[]){
 void* calc(void* arg)
 {
   int segment = arg, start = segment*LENGTH, end = (segment+1)*LENGTH;
-  printf("start: %d, stop: %d.\n", start, end);
+  printf("start: %d, stop: %d.\n", start, end-1);
   long* x = data.a;
   long mysum = 0;
   int i;

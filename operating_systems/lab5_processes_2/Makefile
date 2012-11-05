@@ -29,7 +29,12 @@ cond: cond.o
 cond.o: cond.c
 	$(CC) -c cond.c -o $@ $(LINK)
 
+randomsearch: randomsearch.o
+	$(CC) randomsearch.o -o $@ $(LINK)
+randomsearch.o: randomsearch.c
+	$(CC) -c randomsearch.c -o $@ $(LINK)
+
 clean:
-	rm -f *.o hello1 hello2 hello2_simple func cond
+	rm -f *.o hello1 hello2 hello2_simple func cond randomsearch
 
 .PHONY: clean

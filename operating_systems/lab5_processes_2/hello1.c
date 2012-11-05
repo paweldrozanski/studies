@@ -7,13 +7,13 @@ void *PrintOwnNumber(void *arg);
 
 int main(int argc, char *argv[]){
 
-  int pthread_array[10], i;
+  int rc, i;
   pthread_t thread[10];
 
   for (i=0; i<10; i++){
-    pthread_array[i] = pthread_create(&thread[i], NULL, PrintOwnNumber,(void *) i);
-    if (pthread_array[i]){
-      printf("Return code: %d\n", pthread_array[i]);
+    rc = pthread_create(&thread[i], NULL, PrintOwnNumber,(void *) i);
+    if (rc){
+      printf("Return code: %d\n", rc);
       exit(-1);
     }
   }
