@@ -24,7 +24,12 @@ func: func.o
 func.o: func.c
 	$(CC) -c func.c -o $@ $(LINK)
 
+cond: cond.o
+	$(CC) cond.o -o $@ $(LINK)
+cond.o: cond.c
+	$(CC) -c cond.c -o $@ $(LINK)
+
 clean:
-	rm -f *.o hello1 hello2 hello2_simple func
+	rm -f *.o hello1 hello2 hello2_simple func cond
 
 .PHONY: clean

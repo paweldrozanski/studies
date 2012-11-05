@@ -4,8 +4,9 @@
 // ----------------------------------------------------------
 
 #define MAXVAL 100
+#define THREAD_NUM 10
 
-int globalvariable = 0;
+int globalvariable = 0, i;
 pthread_mutex_t mutex;
 pthread_cond_t cond;
 
@@ -14,8 +15,9 @@ void* printinfo(void*);
 // ----------------------------------------------------------
 
 int main(){
+  int i;
 
-     pthread_t t1, t2, t3;
+     pthread_t t[THREAD_NUM];
      pthread_attr_t attr;
 
      // mutex initialization
@@ -27,16 +29,14 @@ int main(){
      pthread_attr_init(&attr);
      pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-     pthread_create(&t1, &attr, increment, NULL); 
-     pthread_create(&t2, &attr, increment, NULL);
-     pthread_create(&t3, &attr, printinfo, NULL);  
+     for (i=0; i<THREAD_NUM; i++){
+       pthread_create(&t[i], &attr, increment, (void*)i); 
+     }
 
-     pthread_join(t1, NULL);
-     printf("t1 finished!\n");
-     pthread_join(t2, NULL);
-     printf("t2 finished!\n");
-     pthread_join(t3, NULL);
-     printf("t3 finished!\n");
+     for (i=0; i<THREAD_NUM; i++){
+       pthread_join(t[i], NULL);
+       printf("t%d finished!\n", i);
+     }
 
      printf("Finishing...\n");
      return 0;
@@ -44,11 +44,36 @@ int main(){
 // ----------------------------------------------------------
 
 void* increment(void* arg) {
-     pthread_exit((void*) 0);
+  for(;;){
+
+    pthread_mutex_lock(&mutex);
+
+    if (globalvariable == MAXVAL){
+      pthread_cond_signal(&cond);
+      pthread_mutex_unlock(&mutex);
+      pthread_exit((void*) 0);
+    }
+
+    else{
+    printf("Thread: %d globalvariable: %d\n", (int)arg, globalvariable);
+    globalvariable++;
+    pthread_mutex_unlock(&mutex);
+    sleep(3);
+    printf("\n");
+    }
+  }
 }
 // ----------------------------------------------------------
 
 void* printinfo(void* arg) {
-     pthread_exit((void*) 0);
+  pthread_mutex_lock(&mutex);
+
+  while(globalvariable<MAXVAL){
+    pthread_cond_wait(&cond, &mutex);
+  }
+  printf("Thread: %d MAXVAL: %d reached by globalvariable: %d\n", (int)arg, MAXVAL, globalvariable);
+  pthread_mutex_unlock(&mutex);
+  pthread_exit((void*) 0);
+
 }
 // ----------------------------------------------------------
